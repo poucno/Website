@@ -3,6 +3,8 @@ import { useEffect, useRef } from 'react'
 import { Balloons, IslandMark, Landscape } from './components/Decorations'
 import HomePage from './pages/HomePage'
 import PlaceholderPage from './pages/PlaceholderPage'
+import CollectionDashboardPage from './pages/CollectionDashboardPage'
+import CreateCollectionPage from './pages/CreateCollectionPage'
 
 function Layout() {
   const { pathname } = useLocation()
@@ -40,14 +42,8 @@ export default function App() {
     <Routes>
       <Route element={<Layout />}>
         <Route index element={<HomePage />} />
-        <Route path="teachers" element={
-          <PlaceholderPage title="Moje zbirke" description="Tukaj bo prostor za tvoje učne zbirke.">
-            <Link className="button" to="/teachers/collections/new">Oglej si urejevalnik <span aria-hidden="true">→</span></Link>
-          </PlaceholderPage>
-        } />
-        <Route path="teachers/collections/new" element={
-          <PlaceholderPage title="Nova zbirka" description="Urejevalnik zbirk je v pripravi." backTo="/teachers" backLabel="Moje zbirke" />
-        } />
+        <Route path="teachers" element={<CollectionDashboardPage />} />
+        <Route path="teachers/collections/new" element={<CreateCollectionPage />} />
         <Route path="teachers/collections/:collectionId/edit" element={
           <PlaceholderPage title="Uredi zbirko" description="Urejanje zbirk še ni na voljo." backTo="/teachers" backLabel="Moje zbirke" />
         } />
