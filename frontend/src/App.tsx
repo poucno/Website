@@ -20,7 +20,7 @@ function Layout() {
   }, [pathname])
 
   return (
-    <div className={`app-shell ${isTeacherPage ? 'teacher-shell' : 'child-shell'}`}>
+    <div className={`app-shell ${isTeacherPage ? 'teacher-shell' : 'child-shell'} ${pathname === '/' ? 'landing-shell' : ''}`}>
       <a className="skip-link" href="#main-content">Preskoči na vsebino</a>
       <header className="site-header">
         <Link className="brand" to="/" aria-label="Otok znanja – začetna stran">

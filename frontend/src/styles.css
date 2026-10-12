@@ -40,6 +40,34 @@ main:focus { outline: none; }
 }
 .child-shell::before { top: 170px; left: 42%; }
 .child-shell::after { top: 300px; right: -40px; transform: scale(0.75); }
+.landing-shell::before, .landing-shell::after { content: none; }
+.landing-clouds { position: absolute; z-index: -1; top: 0; bottom: 0; left: 50%; width: 100vw; transform: translateX(-50%); pointer-events: none; }
+.cloud { position: absolute; width: 140px; height: 32px; border-radius: 100px; background: #fffdf4; animation: cloud-drift 45s ease-in-out infinite alternate; }
+.cloud::before, .cloud::after { content: ''; position: absolute; border-radius: 50%; background: inherit; }
+.cloud::before { width: 62px; height: 58px; left: 24px; bottom: 8px; }
+.cloud::after { width: 46px; height: 40px; left: 76px; bottom: 6px; }
+.cloud--first { top: 70px; left: 40%; animation-delay: -12s; }
+.cloud--second { top: 200px; right: 0; scale: 0.8; animation-duration: 55s; animation-delay: -32s; }
+.cloud--third { top: 305px; left: 12%; scale: 0.55; animation-duration: 38s; animation-delay: -19s; }
+.balloons--animated { overflow: visible; pointer-events: none; }
+.balloons--animated .balloon-float { transform-box: fill-box; transform-origin: 50% 40%; animation: balloon-sway 6s ease-in-out infinite; }
+.balloons--animated .balloon-float--yellow { animation-duration: 7s; animation-delay: -2s; }
+.balloons--animated .balloon-float--blue { animation-duration: 5.5s; animation-delay: -4s; }
+.balloon-tilt { transform-box: fill-box; transform-origin: 50% 35%; transform: rotate(var(--balloon-tilt, 0deg)); transition: transform 700ms ease-out; }
+.landing-page[data-motion='paused'] .cloud, .landing-page[data-motion='paused'] .balloon-float { animation-play-state: paused; }
+.landing-page[data-motion='paused'] .balloon-tilt { transition: none; }
+.motion-controls { display: flex; justify-content: flex-end; margin-top: 12px; }
+.motion-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 166px; min-height: 44px; padding: 8px 14px; border: 1px solid #8ac5d1; border-radius: 14px; background: #ffffffb3; color: #102451; font-size: 14px; }
+.motion-toggle:hover { background: #fffdf4; }
+
+@keyframes cloud-drift {
+  from { transform: translateX(-40px); }
+  to { transform: translateX(65px); }
+}
+@keyframes balloon-sway {
+  0%, 100% { transform: translateY(4px) rotate(-1.5deg); }
+  50% { transform: translateY(-7px) rotate(1.5deg); }
+}
 .site-header {
   display: flex;
   align-items: center;
@@ -164,6 +192,8 @@ main { position: relative; z-index: 1; padding-bottom: 110px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .cloud, .balloons--animated .balloon-float { animation: none; }
+  .balloon-tilt { transition: none; transform: none; }
   .button { transition: none; }
   .button:active { transform: none; }
 }
