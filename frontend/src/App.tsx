@@ -33,7 +33,7 @@ function Layout() {
         </nav>
       </header>
       <main id="main-content" tabIndex={-1}><Outlet /></main>
-      <Landscape calm={isTeacherPage} />
+      <Landscape />
     </div>
   )
 }
