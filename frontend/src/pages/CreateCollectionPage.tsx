@@ -2,29 +2,34 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { createCollection } from '../data/collectionsStorage'
+import { validateMetadata } from '../data/collectionValidation'
+import type { MetadataErrors } from '../data/collectionValidation'
+import type { CollectionMetadata } from '../types/collection'
+import { useUnsavedChanges } from '../hooks/useUnsavedChanges'
+import CollectionMetadataFields from '../components/CollectionMetadataFields'
+import UnsavedChangesDialog from '../components/UnsavedChangesDialog'
 
 export default function CreateCollectionPage() {
   const navigate = useNavigate()
-  const [title, setTitle] = useState('')
-  const [subject, setSubject] = useState('')
-  const [grade, setGrade] = useState(3)
-  const [errors, setErrors] = useState<{ title?: string; subject?: string }>({})
+  const [metadata, setMetadata] = useState<CollectionMetadata>({ title: '', subject: '', grade: 3 })
+  const [errors, setErrors] = useState<MetadataErrors>({})
   const [saveError, setSaveError] = useState<string | null>(null)
+  const hasChanges = metadata.title !== '' || metadata.subject !== '' || metadata.grade !== 3
+  const { blocker, allowNavigation } = useUnsavedChanges(hasChanges)
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const nextErrors: { title?: string; subject?: string } = {}
-    if (!title.trim()) nextErrors.title = 'Vnesi naslov zbirke.'
-    else if (title.trim().length > 80) nextErrors.title = 'Naslov je lahko dolg največ 80 znakov.'
-    if (!subject.trim()) nextErrors.subject = 'Vnesi predmet.'
+    const nextErrors = validateMetadata(metadata)
     setErrors(nextErrors)
     setSaveError(null)
     if (Object.keys(nextErrors).length > 0) {
-      event.currentTarget.querySelector<HTMLInputElement>(!title.trim() || title.trim().length > 80 ? '#collection-title' : '#collection-subject')?.focus()
+      const field = nextErrors.title ? '#collection-title' : nextErrors.subject ? '#collection-subject' : '#collection-grade'
+      event.currentTarget.querySelector<HTMLElement>(field)?.focus()
       return
     }
     try {
-      createCollection({ title, subject, grade })
+      createCollection(metadata)
+      allowNavigation()
       navigate('/teachers')
     } catch (error) {
       setSaveError(error instanceof Error ? error.message : 'Zbirke ni mogoče shraniti.')
@@ -37,25 +42,8 @@ export default function CreateCollectionPage() {
       <h1 id="create-title">Nova zbirka</h1>
       <p className="local-mode">Lokalni način · Zbirke so shranjene samo v tem brskalniku.</p>
       <form className="collection-form" onSubmit={handleSubmit} noValidate>
-        <div className="metadata-fields">
-          <div className="form-field title-field">
-            <label htmlFor="collection-title">Naslov</label>
-            <input id="collection-title" value={title} onChange={event => setTitle(event.target.value)} maxLength={80} required placeholder="Poštevanka števila 6" aria-invalid={!!errors.title} aria-describedby={errors.title ? 'title-error' : undefined} />
-            {errors.title && <p id="title-error" className="field-error">{errors.title}</p>}
-          </div>
-          <div className="form-field">
-            <label htmlFor="collection-subject">Predmet</label>
-            <input id="collection-subject" value={subject} onChange={event => setSubject(event.target.value)} required placeholder="Matematika" aria-invalid={!!errors.subject} aria-describedby={errors.subject ? 'subject-error' : undefined} />
-            {errors.subject && <p id="subject-error" className="field-error">{errors.subject}</p>}
-          </div>
-          <div className="form-field grade-field">
-            <label htmlFor="collection-grade">Razred</label>
-            <select id="collection-grade" value={grade} onChange={event => setGrade(Number(event.target.value))}>
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(value => <option key={value} value={value}>{value}. razred</option>)}
-            </select>
-          </div>
-        </div>
-        <p className="form-note">Shrani osnutek zbirke. Urejevalnik vprašanj je v pripravi.</p>
+        <CollectionMetadataFields metadata={metadata} errors={errors} onChange={next => { setMetadata(next); setSaveError(null) }} />
+        <p className="form-note">Shrani osnutek, nato z gumbom Uredi dodaj vprašanja.</p>
         {Object.keys(errors).length > 0 && <p className="field-error" role="alert">Preveri označena polja.</p>}
         {saveError && <p className="error-message" role="alert">{saveError}</p>}
         <div className="form-actions">
@@ -63,6 +51,7 @@ export default function CreateCollectionPage() {
           <Link className="button secondary-button" to="/teachers">Prekliči</Link>
         </div>
       </form>
+      {blocker.state === 'blocked' && <UnsavedChangesDialog onStay={() => blocker.reset()} onLeave={() => blocker.proceed()} />}
     </section>
   )
 }

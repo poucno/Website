@@ -11,11 +11,14 @@ export type Question = {
   hint?: string
 }
 
-export type QuestionSet = {
-  version: 1
+export type CollectionMetadata = {
   title: string
   subject: string
   grade: number
+}
+
+export type QuestionSet = CollectionMetadata & {
+  version: 1
   settings: {
     shuffleQuestions: boolean
     movingBalloons: boolean

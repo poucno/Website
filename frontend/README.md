@@ -13,6 +13,7 @@ npm ci
 npm run dev
 npm run typecheck
 npm run lint
+npm run test
 npm run build
 ```
 
@@ -28,7 +29,8 @@ projekta; učiteljem ga ni treba pisati.
 Trenutna demonstracija uporablja `localStorage`: zbirke ostanejo v istem
 brskalniku in izvoru, niso sinhronizirane ali zaščitene z računom. Prijava,
 deljenje, beleženje rezultatov, FastAPI in Godot integracija čakajo na dogovor
-ekipe. Urejevalnik vprašanj, uvoz/izvoz in predogled sledijo v ločenih korakih.
+ekipe. Urejevalnik vprašanj že deluje; uvoz/izvoz in predogled sledita v
+ločenih korakih. Testi validacije uporabljajo Vitest 4.1.11.
 
 ## Začetni JSON dogovor
 

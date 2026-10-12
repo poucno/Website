@@ -1,4 +1,5 @@
 import type { Answer, Collection, Question } from '../types/collection'
+import { hasValidationErrors, trimCollection, validateQuestionSet } from './collectionValidation'
 
 export const COLLECTIONS_STORAGE_KEY = 'otok-znanja.collections.v1'
 
@@ -88,4 +89,15 @@ export function deleteCollection(id: string): Collection[] {
   const remaining = collections.filter(collection => collection.id !== id)
   if (remaining.length !== collections.length) writeCollections(remaining)
   return remaining
+}
+
+export function updateCollection(collection: Collection, original: Collection): void {
+  const collections = readCollections()
+  const current = collections.find(item => item.id === collection.id)
+  if (!current) throw new Error('Zbirka ni več na voljo. Tvoji vnosi ostajajo v obrazcu.')
+  if (JSON.stringify(current) !== JSON.stringify(original)) {
+    throw new Error('Zbirka je bila med urejanjem spremenjena v drugem zavihku. Novejši podatki niso prepisani; tvoji vnosi ostajajo v obrazcu.')
+  }
+  if (hasValidationErrors(validateQuestionSet(collection))) throw new Error('Zbirka vsebuje napake. Preveri označena polja.')
+  writeCollections(collections.map(item => item.id === collection.id ? trimCollection(collection) : item))
 }
