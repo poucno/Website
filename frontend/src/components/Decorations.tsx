@@ -98,9 +98,9 @@ export function Balloons({ animated = false, motionEnabled = true }: { animated?
   )
 }
 
-export function Landscape() {
+export function Landscape({ calm = false }: { calm?: boolean }) {
   return (
-    <svg className="landscape" viewBox="0 0 1440 260" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+    <svg className="landscape" viewBox="0 0 1440 260" preserveAspectRatio={calm ? 'xMidYMax slice' : 'none'} aria-hidden="true" focusable="false">
       <path d="M0 156 Q150 100 290 153 Q465 0 660 151 Q850 45 1030 141 Q1240 55 1440 148 V260 H0Z" fill="#91cbd0" />
       <path d="M0 184 Q190 151 391 183 Q700 110 976 182 Q1220 139 1440 170 V260 H0Z" fill="#64cde4" />
       <path d="M0 183 Q160 148 390 230 Q590 255 806 230 Q1090 143 1440 189 V260 H0Z" fill="#bbd983" />
