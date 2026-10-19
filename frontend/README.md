@@ -32,6 +32,9 @@ deljenje, beleženje rezultatov, FastAPI in Godot integracija čakajo na dogovor
 ekipe. Urejevalnik vprašanj že deluje; uvoz/izvoz in predogled sledita v
 ločenih korakih. Testi validacije uporabljajo Vitest 4.1.11.
 
+Prijava (`/teachers/login`) in registracija (`/teachers/register`) sta samo
+UI predogled: brez prijavljanja, ustvarjanja računov ali shranjevanja gesel.
+
 ## Začetni JSON dogovor
 
 ```json
