@@ -6,6 +6,7 @@ import PlaceholderPage from './pages/PlaceholderPage'
 import CollectionDashboardPage from './pages/CollectionDashboardPage'
 import CreateCollectionPage from './pages/CreateCollectionPage'
 import CollectionEditorPage from './pages/CollectionEditorPage'
+import PlayPage from './pages/PlayPage'
 
 function Layout() {
   const { pathname } = useLocation()
@@ -45,6 +46,8 @@ const router = createBrowserRouter(createRoutesFromElements(
     <Route path="teachers" element={<CollectionDashboardPage />} />
     <Route path="teachers/collections/new" element={<CreateCollectionPage />} />
     <Route path="teachers/collections/:collectionId/edit" element={<CollectionEditorPage />} />
+    <Route path="play/:gameName" element={<PlayPage />} />
+    <Route path="play/:gameName/:collectionId" element={<PlayPage />} />
     <Route path="preview" element={
       <PlaceholderPage title="Lovljenje balonov" description="Predogled vprašanj je v pripravi. Igra še ni povezana." backTo="/" backLabel="Začetna stran">
         <Balloons />

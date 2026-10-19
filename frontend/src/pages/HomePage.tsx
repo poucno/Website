@@ -32,12 +32,11 @@ export default function HomePage() {
         <Balloons animated motionEnabled={motionEnabled} />
       </section>
       <section className="game-card" aria-labelledby="game-title">
-        <span className="game-icon" aria-hidden="true">6 × 4</span>
+        <span className="game-icon" aria-hidden="true">🚀</span>
         <div>
-          <h2 id="game-title">Lovljenje balonov</h2>
-          <p>Predogled je v pripravi.</p>
+          <h2 id="game-title">Vesolsko lovljenje</h2>
         </div>
-        <Link className="button" to="/preview">Oglej si <span aria-hidden="true">→</span></Link>
+        <Link className="button" to="/play/falling_objects">Oglej si <span aria-hidden="true">→</span></Link>
       </section>
       {!reducedMotion && (
         <div className="motion-controls">
