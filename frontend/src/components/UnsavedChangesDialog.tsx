@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { BalloonIcon } from './Decorations'
 
 export default function UnsavedChangesDialog({ onStay, onLeave }: { onStay: () => void; onLeave: () => void }) {
   const dialogRef = useRef<HTMLDialogElement>(null)
@@ -11,6 +12,7 @@ export default function UnsavedChangesDialog({ onStay, onLeave }: { onStay: () =
 
   return (
     <dialog className="unsaved-dialog" ref={dialogRef} aria-labelledby="unsaved-title" aria-describedby="unsaved-description" onCancel={event => { event.preventDefault(); onStay() }}>
+      <BalloonIcon className="dialog-balloon" tone="yellow" mood="worried" />
       <h2 id="unsaved-title">Neshranjene spremembe</h2>
       <p id="unsaved-description">Če zapustiš stran, bodo zadnje spremembe izgubljene.</p>
       <div className="dialog-actions">

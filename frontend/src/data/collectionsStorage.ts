@@ -68,7 +68,7 @@ function writeCollections(collections: Collection[]): void {
   }
 }
 
-export function createCollection(details: { title: string; subject: string; grade: number }): void {
+export function createCollection(details: { title: string; subject: string; grade: number }): string {
   // Re-read before each change so damaged or newer data is never overwritten.
   const collections = readCollections()
   const collection: Collection = {
@@ -82,6 +82,7 @@ export function createCollection(details: { title: string; subject: string; grad
   }
   if (!isCollection(collection)) throw new Error('Podatki zbirke niso veljavni. Preveri naslov, predmet in razred.')
   writeCollections([...collections, collection])
+  return collection.id
 }
 
 export function deleteCollection(id: string): Collection[] {

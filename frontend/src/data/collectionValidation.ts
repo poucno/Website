@@ -1,4 +1,4 @@
-import type { Collection, CollectionMetadata, QuestionSet } from '../types/collection'
+import type { Collection, CollectionMetadata, Question, QuestionSet } from '../types/collection'
 
 export const COLLECTION_LIMITS = { title: 80, question: 200, answer: 40, hint: 200 }
 
@@ -33,35 +33,42 @@ export function validateQuestionSet(collection: QuestionSet): QuestionSetErrors 
   }
   if (collection.questions.length === 0) errors.questions = 'Dodaj najmanj eno vprašanje.'
 
-  errors.questionErrors = collection.questions.map(question => {
-    const questionErrors: QuestionErrors = { answers: [] }
-    if (!question.id.trim() || collection.questions.filter(item => item.id === question.id).length > 1) {
-      questionErrors.id = 'Vprašanje mora imeti svoj neprazen identifikator.'
-    }
-    if (!question.text.trim()) questionErrors.text = 'Vnesi vprašanje.'
-    else if (question.text.trim().length > COLLECTION_LIMITS.question) questionErrors.text = 'Vprašanje je lahko dolgo največ 200 znakov.'
-    if (question.answers.length !== 3) questionErrors.answerCount = 'Vprašanje mora imeti natanko tri odgovore.'
-    const answerTexts = question.answers.map(answer => answer.text.trim())
-    questionErrors.answers = question.answers.map(answer => {
-      if (!answer.id.trim() || question.answers.filter(item => item.id === answer.id).length > 1) return 'Odgovor mora imeti svoj neprazen identifikator.'
-      if (!answer.text.trim()) return 'Vnesi odgovor.'
-      if (answer.text.trim().length > COLLECTION_LIMITS.answer) return 'Odgovor je lahko dolg največ 40 znakov.'
-      if (answerTexts.filter(text => text === answer.text.trim()).length > 1) return 'Odgovori morajo biti različni.'
-      return ''
-    })
-    if (!question.answers.some(answer => answer.id === question.correctAnswerId)) {
-      questionErrors.correctAnswerId = 'Izberi en pravilen odgovor.'
-    }
-    if ((question.hint?.trim().length ?? 0) > COLLECTION_LIMITS.hint) questionErrors.hint = 'Namig je lahko dolg največ 200 znakov.'
-    return questionErrors
-  })
+  errors.questionErrors = collection.questions.map(question => validateQuestion(question,
+    collection.questions.filter(item => item.id === question.id).length > 1))
   return errors
+}
+
+function validateQuestion(question: Question, duplicateId = false): QuestionErrors {
+  const questionErrors: QuestionErrors = { answers: [] }
+  if (!question.id.trim() || duplicateId) {
+    questionErrors.id = 'Vprašanje mora imeti svoj neprazen identifikator.'
+  }
+  if (!question.text.trim()) questionErrors.text = 'Vnesi vprašanje.'
+  else if (question.text.trim().length > COLLECTION_LIMITS.question) questionErrors.text = 'Vprašanje je lahko dolgo največ 200 znakov.'
+  if (question.answers.length !== 3) questionErrors.answerCount = 'Vprašanje mora imeti natanko tri odgovore.'
+  const answerTexts = question.answers.map(answer => answer.text.trim())
+  questionErrors.answers = question.answers.map(answer => {
+    if (!answer.id.trim() || question.answers.filter(item => item.id === answer.id).length > 1) return 'Odgovor mora imeti svoj neprazen identifikator.'
+    if (!answer.text.trim()) return 'Vnesi odgovor.'
+    if (answer.text.trim().length > COLLECTION_LIMITS.answer) return 'Odgovor je lahko dolg največ 40 znakov.'
+    if (answerTexts.filter(text => text === answer.text.trim()).length > 1) return 'Odgovori morajo biti različni.'
+    return ''
+  })
+  if (!question.answers.some(answer => answer.id === question.correctAnswerId)) {
+    questionErrors.correctAnswerId = 'Izberi en pravilen odgovor.'
+  }
+  if ((question.hint?.trim().length ?? 0) > COLLECTION_LIMITS.hint) questionErrors.hint = 'Namig je lahko dolg največ 200 znakov.'
+  return questionErrors
+}
+
+function hasQuestionErrors(question: QuestionErrors): boolean {
+  return !!(question.id || question.text || question.answerCount || question.correctAnswerId
+    || question.hint || question.answers.some(error => error !== ''))
 }
 
 export function hasValidationErrors(errors: QuestionSetErrors): boolean {
   return !!(errors.title || errors.subject || errors.grade || errors.settings || errors.questions
-    || errors.questionErrors.some(question => question.id || question.text || question.answerCount
-      || question.correctAnswerId || question.hint || question.answers.some(error => error !== '')))
+    || errors.questionErrors.some(hasQuestionErrors))
 }
 
 export function trimCollection(collection: Collection): Collection {
@@ -77,4 +84,9 @@ export function trimCollection(collection: Collection): Collection {
       hint: question.hint?.trim() || undefined,
     })),
   }
+}
+
+// Use the same question rules for progress feedback and saving.
+export function isQuestionComplete(question: Question): boolean {
+  return !hasQuestionErrors(validateQuestion(question))
 }

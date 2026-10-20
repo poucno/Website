@@ -1,4 +1,7 @@
 import type { Question } from '../types/collection'
+import { BalloonIcon } from './Decorations'
+import type { BalloonName } from './Decorations'
+import { isQuestionComplete } from '../data/collectionValidation'
 import { COLLECTION_LIMITS } from '../data/collectionValidation'
 import type { QuestionErrors } from '../data/collectionValidation'
 
@@ -8,9 +11,13 @@ type QuestionEditorProps = {
   errors?: QuestionErrors
   onChange: (question: Question) => void
   onRemove: () => void
+  isNew?: boolean
 }
 
-export default function QuestionEditor({ question, index, errors, onChange, onRemove }: QuestionEditorProps) {
+// Each answer matches a balloon colour in the game.
+const TONES: BalloonName[] = ['coral', 'yellow', 'blue']
+
+export default function QuestionEditor({ question, index, errors, onChange, onRemove, isNew = false }: QuestionEditorProps) {
   const prefix = `question-${question.id}`
 
   function changeAnswer(answerIndex: number, text: string) {
@@ -22,8 +29,9 @@ export default function QuestionEditor({ question, index, errors, onChange, onRe
   }
 
   return (
-    <fieldset className="question-card">
+    <fieldset className={`question-card ${isNew ? 'question-card--new' : ''}`}>
       <legend>Vprašanje {index + 1}</legend>
+      <p className={`question-status ${isQuestionComplete(question) ? 'question-status--ready' : ''}`}>{isQuestionComplete(question) ? 'Pripravljeno' : 'Še ni dokončano'}</p>
       <button className="question-remove" type="button" onClick={onRemove} aria-label={`Odstrani vprašanje ${index + 1}`}>Odstrani</button>
       {errors?.id && <p className="field-error">{errors.id}</p>}
       <div className="form-field question-text-field">
@@ -36,9 +44,10 @@ export default function QuestionEditor({ question, index, errors, onChange, onRe
         <p id={`${prefix}-answer-help`} className="answer-help">Označi pravilen odgovor.</p>
         {errors?.answerCount && <p className="field-error">{errors.answerCount}</p>}
         {question.answers.map((answer, answerIndex) => (
-          <div className="answer-row" key={answer.id}>
+          <div className="answer-row" key={answer.id} data-tone={TONES[answerIndex]}>
             <label className="correct-answer-label">
               <input type="radio" name={`${prefix}-correct`} value={answer.id} checked={question.correctAnswerId === answer.id} onChange={() => onChange({ ...question, correctAnswerId: answer.id })} aria-invalid={!!errors?.correctAnswerId} />
+              <BalloonIcon className="balloon-radio" tone={TONES[answerIndex] ?? 'blue'} mood={question.correctAnswerId === answer.id ? 'happy' : 'calm'} />
               <span className="sr-only">Pravilen odgovor {answerIndex + 1} za vprašanje {index + 1}</span>
             </label>
             <div className="form-field">

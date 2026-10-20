@@ -1,6 +1,9 @@
 import { createBrowserRouter, createRoutesFromElements, Link, NavLink, Outlet, Route, RouterProvider, useLocation } from 'react-router-dom'
 import { useEffect, useRef } from 'react'
 import { Balloons, IslandMark, Landscape } from './components/Decorations'
+import MotionProvider from './components/MotionProvider'
+import MotionToggle from './components/MotionToggle'
+import { useMotion } from './hooks/useMotion'
 import HomePage from './pages/HomePage'
 import PlaceholderPage from './pages/PlaceholderPage'
 import CollectionDashboardPage from './pages/CollectionDashboardPage'
@@ -15,6 +18,7 @@ function Layout() {
   const showHomeLink = isAuthPage || isTeacherPage
   const navigationLabel = isAuthPage ? 'Nazaj na začetek' : isTeacherPage ? 'Začetna stran' : 'Za učitelje'
   const previousPath = useRef(pathname)
+  const { motionEnabled } = useMotion()
 
   useEffect(() => {
     if (previousPath.current === pathname) return
@@ -25,19 +29,23 @@ function Layout() {
   }, [pathname])
 
   return (
-    <div className={`app-shell ${isTeacherPage ? 'teacher-shell' : 'child-shell'} ${pathname === '/' ? 'landing-shell' : ''} ${isAuthPage ? 'auth-shell' : ''}`}>
+    <div className={`app-shell ${isTeacherPage ? 'teacher-shell' : 'child-shell'} ${pathname === '/' ? 'landing-shell' : ''} ${isAuthPage ? 'auth-shell' : ''}`} data-motion={motionEnabled ? 'running' : 'paused'}>
       <a className="skip-link" href="#main-content">Preskoči na vsebino</a>
       <header className="site-header">
         <Link className="brand" to="/" aria-label="Otok znanja – začetna stran">
           <IslandMark />
           <span>Otok znanja</span>
         </Link>
-        <nav aria-label="Glavna navigacija">
-          <NavLink to={showHomeLink ? '/' : '/teachers/login'} end={showHomeLink}>{navigationLabel}</NavLink>
-        </nav>
+        <div className="header-actions">
+          <MotionToggle />
+          <nav aria-label="Glavna navigacija">
+            <NavLink to={showHomeLink ? '/' : '/teachers/login'} end={showHomeLink}>{navigationLabel}</NavLink>
+          </nav>
+        </div>
       </header>
       <main id="main-content" tabIndex={-1}><Outlet /></main>
       <Landscape />
+      {isTeacherPage && <div className="teacher-balloons"><Balloons animated interactive /></div>}
     </div>
   )
 }
@@ -53,15 +61,17 @@ const router = createBrowserRouter(createRoutesFromElements(
     <Route path="teachers/collections/:collectionId/edit" element={<CollectionEditorPage />} />
     <Route path="preview" element={
       <PlaceholderPage title="Lovljenje balonov" description="Predogled vprašanj je v pripravi. Igra še ni povezana." backTo="/" backLabel="Začetna stran">
-        <Balloons />
+        <Balloons animated interactive />
       </PlaceholderPage>
     } />
     <Route path="*" element={
-      <PlaceholderPage title="Ta stran ne obstaja" description="Vrnimo se na otok." backTo="/" backLabel="Začetna stran" />
+      <PlaceholderPage title="Ta stran ne obstaja" description="Vrnimo se na otok." backTo="/" backLabel="Začetna stran">
+        <Balloons animated interactive only={['blue']} crop />
+      </PlaceholderPage>
     } />
   </Route>
 ))
 
 export default function App() {
-  return <RouterProvider router={router} />
+  return <MotionProvider><RouterProvider router={router} /></MotionProvider>
 }

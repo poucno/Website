@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Collection } from '../types/collection'
-import { hasValidationErrors, trimCollection, validateQuestionSet } from './collectionValidation'
+import { hasValidationErrors, isQuestionComplete, trimCollection, validateQuestionSet } from './collectionValidation'
 import { COLLECTIONS_STORAGE_KEY, readCollections, updateCollection } from './collectionsStorage'
 
 function makeCollection(): Collection {
@@ -18,6 +18,19 @@ function makeCollection(): Collection {
 describe('question set validation', () => {
   it('accepts a valid question set', () => {
     expect(hasValidationErrors(validateQuestionSet(makeCollection()))).toBe(false)
+  })
+
+  it('marks only valid questions as ready', () => {
+    const question = makeCollection().questions[0]!
+    expect(isQuestionComplete(question)).toBe(true)
+    question.answers[0].text = ' 24 '
+    expect(isQuestionComplete(question)).toBe(false)
+    question.answers[0].text = '18'
+    question.hint = 'x'.repeat(201)
+    expect(isQuestionComplete(question)).toBe(false)
+    question.hint = ''
+    question.correctAnswerId = 'missing'
+    expect(isQuestionComplete(question)).toBe(false)
   })
 
   it('requires at least one question', () => {

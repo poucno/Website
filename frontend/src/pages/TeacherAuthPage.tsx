@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { Balloons } from '../components/Decorations'
 import PasswordField from '../components/PasswordField'
+import { Balloons, Birds } from '../components/Decorations'
+import { useMotion } from '../hooks/useMotion'
 
 type AuthFields = { fullName: string; email: string; password: string; passwordConfirmation: string }
 type AuthErrors = { fullName?: string; email?: string; password?: string; passwordConfirmation?: string }
@@ -12,6 +13,8 @@ export default function TeacherAuthPage({ mode }: { mode: 'login' | 'register' }
   const [fields, setFields] = useState<AuthFields>({ fullName: '', email: '', password: '', passwordConfirmation: '' })
   const [errors, setErrors] = useState<AuthErrors>({})
   const [submitted, setSubmitted] = useState(false)
+  const [shaking, setShaking] = useState(false)
+  const { motionEnabled } = useMotion()
 
   function updateField(name: keyof AuthFields, value: string) {
     setFields(previous => ({ ...previous, [name]: value }))
@@ -33,6 +36,7 @@ export default function TeacherAuthPage({ mode }: { mode: 'login' | 'register' }
       else if (fields.passwordConfirmation !== fields.password) nextErrors.passwordConfirmation = 'Gesli se ne ujemata.'
     }
     setErrors(nextErrors)
+    setShaking(motionEnabled && Object.keys(nextErrors).length > 0)
     const firstError = Object.keys(nextErrors)[0]
     if (firstError) {
       const field = event.currentTarget.elements.namedItem(firstError)
@@ -45,17 +49,18 @@ export default function TeacherAuthPage({ mode }: { mode: 'login' | 'register' }
 
   return (
     <section className="auth-page" aria-labelledby="auth-title">
-      <div className="auth-decorations" aria-hidden="true">
-        <span className="cloud auth-cloud--first" />
-        <span className="cloud auth-cloud--second" />
-        <span className="cloud auth-cloud--third" />
-        <div className="auth-balloons auth-balloons--left"><Balloons /></div>
-        <div className="auth-balloons auth-balloons--right"><Balloons /></div>
+      <div className="auth-decorations">
+        <span className="cloud auth-cloud--first" aria-hidden="true" />
+        <span className="cloud auth-cloud--second" aria-hidden="true" />
+        <span className="cloud auth-cloud--third" aria-hidden="true" />
+        <Birds />
+        <div className="auth-balloons auth-balloons--left"><Balloons animated interactive only={['coral', 'yellow']} /></div>
+        <div className="auth-balloons auth-balloons--right"><Balloons animated interactive only={['blue']} /></div>
       </div>
       <div className="auth-card">
         <h1 id="auth-title">{registering ? 'Ustvarite učiteljski račun' : 'Dobrodošli nazaj!'}</h1>
         <p className="auth-description">{registering ? 'Pripravite vprašanja za svoje učence.' : 'Prijavite se v učiteljski račun.'}</p>
-        <form className="auth-form" onSubmit={handleSubmit} noValidate>
+        <form className={`auth-form ${shaking ? 'auth-form--shake' : ''}`} onAnimationEnd={event => { if (event.animationName === 'card-shake') setShaking(false) }} onSubmit={handleSubmit} noValidate>
           {registering && (
             <div className="form-field">
               <label htmlFor="fullName">Ime in priimek</label>

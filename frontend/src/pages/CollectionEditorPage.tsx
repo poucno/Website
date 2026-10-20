@@ -3,7 +3,7 @@ import type { FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useUnsavedChanges } from '../hooks/useUnsavedChanges'
 import { readCollections, updateCollection } from '../data/collectionsStorage'
-import { hasValidationErrors, validateQuestionSet } from '../data/collectionValidation'
+import { hasValidationErrors, isQuestionComplete, validateQuestionSet } from '../data/collectionValidation'
 import type { QuestionSetErrors } from '../data/collectionValidation'
 import type { Collection, Question } from '../types/collection'
 import CollectionMetadataFields from '../components/CollectionMetadataFields'
@@ -36,6 +36,7 @@ function CollectionEditor({ initialCollection }: { initialCollection: Collection
   const [draft, setDraft] = useState(() => structuredClone(initialCollection))
   const [errors, setErrors] = useState<QuestionSetErrors | null>(null)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [justAddedId, setJustAddedId] = useState<string | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
   const hasChanges = JSON.stringify(draft) !== JSON.stringify(initialCollection)
   const { blocker, allowNavigation } = useUnsavedChanges(hasChanges)
@@ -54,6 +55,7 @@ function CollectionEditor({ initialCollection }: { initialCollection: Collection
       correctAnswerId: '',
     }
     changeDraft({ ...draft, questions: [...draft.questions, question] })
+    setJustAddedId(question.id)
     requestAnimationFrame(() => document.getElementById(`question-${question.id}-text`)?.focus())
   }
 
@@ -80,17 +82,26 @@ function CollectionEditor({ initialCollection }: { initialCollection: Collection
     try {
       updateCollection(draft, initialCollection)
       allowNavigation()
-      navigate('/teachers')
+      navigate('/teachers', { state: { notice: `Zbirka »${draft.title.trim()}« je shranjena.`, highlightId: draft.id } })
     } catch (error) {
       setSaveError(error instanceof Error ? error.message : 'Zbirke ni mogoče shraniti.')
     }
   }
+
+  const readyCount = draft.questions.filter(isQuestionComplete).length
+  const total = draft.questions.length
 
   return (
     <section className="editor-page" aria-labelledby="editor-title">
       <Link className="back-link" to="/teachers"><span aria-hidden="true">←</span> Moje zbirke</Link>
       <h1 id="editor-title">Uredi zbirko</h1>
       <p className="local-mode">Lokalni način · Zbirke so shranjene samo v tem brskalniku.</p>
+      {total > 0 && (
+        <div className={`progress ${readyCount === total ? 'progress--done' : ''}`}>
+          <div className="progress-track" aria-hidden="true"><div className="progress-fill" style={{ width: `${(readyCount / total) * 100}%` }} /></div>
+          <p>Pripravljeno: {readyCount} od {total}</p>
+        </div>
+      )}
       <form ref={formRef} className="editor-form" onSubmit={handleSubmit} noValidate>
         <CollectionMetadataFields metadata={draft} errors={errors ?? {}} onChange={metadata => changeDraft({ ...draft, ...metadata })} />
         <fieldset className="collection-settings">
@@ -103,15 +114,17 @@ function CollectionEditor({ initialCollection }: { initialCollection: Collection
           {draft.questions.map((question, index) => (
             <QuestionEditor key={question.id} question={question} index={index} errors={errors?.questionErrors[index]}
               onChange={updated => changeDraft({ ...draft, questions: draft.questions.map(item => item.id === updated.id ? updated : item) })}
-              onRemove={() => removeQuestion(question.id)} />
+              onRemove={() => removeQuestion(question.id)} isNew={question.id === justAddedId} />
           ))}
         </div>
         {draft.questions.length === 0 && <p className="form-note">Zbirka še nima vprašanj.</p>}
         {errors?.questions && <p className="field-error questions-error" tabIndex={-1}>{errors.questions}</p>}
-        <button className="button secondary-button add-question-button" type="button" onClick={addQuestion}><span aria-hidden="true">＋</span> Dodaj vprašanje</button>
         {errors && hasValidationErrors(errors) && <p className="field-error validation-summary" role="alert">Preveri označena polja. Spremembe še niso shranjene.</p>}
         {saveError && <p className="error-message save-error" role="alert">{saveError}</p>}
         <div className="form-actions editor-actions">
+          <button className="button secondary-button add-question-button" type="button" onClick={addQuestion}><span aria-hidden="true">＋</span> Dodaj vprašanje</button>
+          <span className="editor-actions-spacer" />
+          {hasChanges && <span className="unsaved-pill">Neshranjene spremembe</span>}
           <button className="button" type="submit">Shrani</button>
           <Link className="button secondary-button" to="/teachers">Prekliči</Link>
         </div>

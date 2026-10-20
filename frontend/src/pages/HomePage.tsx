@@ -1,52 +1,39 @@
 import { Link } from 'react-router-dom'
-import { useEffect, useState } from 'react'
-import { Balloons } from '../components/Decorations'
+import type { CSSProperties } from 'react'
+import { Balloons, Birds, MiniBalloons } from '../components/Decorations'
+
+// Each headline word drops in one after the other.
+const delay = (index: number) => ({ '--i': index }) as CSSProperties
 
 export default function HomePage() {
-  const [paused, setPaused] = useState(false)
-  const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-  const motionEnabled = !paused && !reducedMotion
-
-  useEffect(() => {
-    const preference = window.matchMedia('(prefers-reduced-motion: reduce)')
-    function handleChange(event: MediaQueryListEvent) {
-      setReducedMotion(event.matches)
-    }
-    preference.addEventListener('change', handleChange)
-    return () => preference.removeEventListener('change', handleChange)
-  }, [])
-
   return (
-    <div className="landing-page" data-motion={motionEnabled ? 'running' : 'paused'}>
+    <div className="landing-page">
       <div className="landing-clouds" aria-hidden="true">
         <span className="cloud cloud--first" />
         <span className="cloud cloud--second" />
         <span className="cloud cloud--third" />
+        <Birds />
       </div>
       <section className="hero" aria-labelledby="welcome-title">
         <div className="hero-copy">
-          <h1 id="welcome-title">Znanje poleti<br />visoko!</h1>
-          <p>Uči se skozi igro.</p>
+          <h1 id="welcome-title">
+            <span className="hero-word" style={delay(0)}>Znanje</span>{' '}
+            <span className="hero-word" style={delay(1)}>poleti</span><br />
+            <span className="hero-word" style={delay(2)}>visoko!</span>
+          </h1>
+          <p className="hero-tagline">Uči se skozi igro.</p>
           <Link className="button hero-button" to="/preview">Razišči otok <span aria-hidden="true">→</span></Link>
         </div>
-        <Balloons animated motionEnabled={motionEnabled} />
+        <Balloons animated interactive />
       </section>
       <section className="game-card" aria-labelledby="game-title">
-        <span className="game-icon" aria-hidden="true">6 × 4</span>
+        <span className="game-icon" aria-hidden="true"><MiniBalloons /></span>
         <div>
           <h2 id="game-title">Lovljenje balonov</h2>
           <p>Predogled je v pripravi.</p>
         </div>
         <Link className="button" to="/preview">Oglej si <span aria-hidden="true">→</span></Link>
       </section>
-      {!reducedMotion && (
-        <div className="motion-controls">
-          <button className="motion-toggle" onClick={() => setPaused(!paused)}>
-            <span aria-hidden="true">{paused ? '▷' : 'Ⅱ'}</span>
-            {paused ? 'Nadaljuj gibanje' : 'Ustavi gibanje'}
-          </button>
-        </div>
-      )}
     </div>
   )
 }

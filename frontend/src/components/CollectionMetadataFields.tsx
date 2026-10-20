@@ -2,6 +2,8 @@ import type { CollectionMetadata } from '../types/collection'
 import { COLLECTION_LIMITS } from '../data/collectionValidation'
 import type { MetadataErrors } from '../data/collectionValidation'
 
+const SUBJECT_SUGGESTIONS = ['Matematika', 'Slovenščina', 'Angleščina', 'Spoznavanje okolja', 'Naravoslovje', 'Geografija', 'Zgodovina', 'Glasbena umetnost', 'Likovna umetnost', 'Šport']
+
 type CollectionMetadataFieldsProps = {
   metadata: CollectionMetadata
   errors: MetadataErrors
@@ -18,7 +20,8 @@ export default function CollectionMetadataFields({ metadata, errors, onChange }:
       </div>
       <div className="form-field">
         <label htmlFor="collection-subject">Predmet</label>
-        <input id="collection-subject" value={metadata.subject} onChange={event => onChange({ ...metadata, subject: event.target.value })} required placeholder="Matematika" aria-invalid={!!errors.subject} aria-describedby={errors.subject ? 'subject-error' : undefined} />
+        <input id="collection-subject" value={metadata.subject} onChange={event => onChange({ ...metadata, subject: event.target.value })} required list="subject-suggestions" autoComplete="off" placeholder="Matematika" aria-invalid={!!errors.subject} aria-describedby={errors.subject ? 'subject-error' : undefined} />
+        <datalist id="subject-suggestions">{SUBJECT_SUGGESTIONS.map(subject => <option key={subject} value={subject} />)}</datalist>
         {errors.subject && <p id="subject-error" className="field-error">{errors.subject}</p>}
       </div>
       <div className="form-field grade-field">

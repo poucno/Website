@@ -7,6 +7,8 @@ import type { MetadataErrors } from '../data/collectionValidation'
 import type { CollectionMetadata } from '../types/collection'
 import { useUnsavedChanges } from '../hooks/useUnsavedChanges'
 import CollectionMetadataFields from '../components/CollectionMetadataFields'
+import { SubjectTile } from '../components/Decorations'
+import { pluralSl, QUESTION_FORMS } from '../data/plural'
 import UnsavedChangesDialog from '../components/UnsavedChangesDialog'
 
 export default function CreateCollectionPage() {
@@ -28,9 +30,9 @@ export default function CreateCollectionPage() {
       return
     }
     try {
-      createCollection(metadata)
+      const id = createCollection(metadata)
       allowNavigation()
-      navigate('/teachers')
+      navigate('/teachers', { state: { notice: `Zbirka »${metadata.title.trim()}« je ustvarjena. Dodaj ji vprašanja z gumbom Uredi.`, highlightId: id } })
     } catch (error) {
       setSaveError(error instanceof Error ? error.message : 'Zbirke ni mogoče shraniti.')
     }
@@ -41,6 +43,7 @@ export default function CreateCollectionPage() {
       <Link className="back-link" to="/teachers"><span aria-hidden="true">←</span> Moje zbirke</Link>
       <h1 id="create-title">Nova zbirka</h1>
       <p className="local-mode">Lokalni način · Zbirke so shranjene samo v tem brskalniku.</p>
+      <div className="create-layout">
       <form className="collection-form" onSubmit={handleSubmit} noValidate>
         <CollectionMetadataFields metadata={metadata} errors={errors} onChange={next => { setMetadata(next); setSaveError(null) }} />
         <p className="form-note">Shrani osnutek, nato z gumbom Uredi dodaj vprašanja.</p>
@@ -51,6 +54,17 @@ export default function CreateCollectionPage() {
           <Link className="button secondary-button" to="/teachers">Prekliči</Link>
         </div>
       </form>
+      <aside className="live-preview" aria-hidden="true">
+        <p className="live-preview-label">Tako bo videti na seznamu</p>
+        <div className="collection-card collection-card--preview">
+          <SubjectTile subject={metadata.subject} grade={metadata.grade} />
+          <div className="collection-details">
+            <h2 className={metadata.title.trim() ? '' : 'is-placeholder'}>{metadata.title.trim() || 'Naslov zbirke'}</h2>
+            <p className="collection-meta"><span className={metadata.subject.trim() ? '' : 'is-placeholder'}>{metadata.subject.trim() || 'Predmet'}</span><span>{metadata.grade}. razred</span><span>0 {pluralSl(0, QUESTION_FORMS)}</span></p>
+          </div>
+        </div>
+      </aside>
+      </div>
       {blocker.state === 'blocked' && <UnsavedChangesDialog onStay={() => blocker.reset()} onLeave={() => blocker.proceed()} />}
     </section>
   )
